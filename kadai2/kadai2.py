@@ -1,0 +1,104 @@
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import seaborn as sns
+import copy
+import csv
+import os
+import runge_kutta4
+import mplcursors
+
+#Xのデータの入っているout.csvまでのパス
+path = '../out.csv'
+# プロットするデータのinput
+D = np.loadtxt(path, delimiter=',', dtype='float32')
+#ルンゲクッタの計算ステップ回数
+N = 20
+
+#errorは各Xとその時間発展事の誤差の大きさを集めるリスト
+#176=(900-20)/5
+error1 = [[] for i in range(176)]#微笑時間=0.01のときのため
+error2 = [[] for i in range(176)]#微笑時間=0.02のときのため
+error3 = [[] for i in range(176)]#微笑時間=0.03のときのため
+error4 = [[] for i in range(176)]#微笑時間=0.04のときのため
+
+#range(20,5,1000)だと何回目の計算か分かりにくいので別にcountを定義してカウントする
+count = 0
+
+#ホフメラー図を確認したところ、20番目のXはすでにカオスに移行していたので20番目から５飛ばしで1000まで行う
+for i in range(20, 900, 5):
+
+    # 誤差発達率を導出するための誤差を40次元分用意する
+    R = []
+    for j in range(40):
+        R.append(np.random.randn()/10000)
+
+    #Xのある点の各要素に誤差を加える
+    DD = []
+    for j in range(40):
+        DD.append( D[i][j] + R[j])
+
+    #上で誤差を加えたXがルンゲクッタの時間発展とともにどれだけ誤差を大きくしていくかをみる
+    DDD1 = runge_kutta4.Lorenz96_RK4(DD, 0.01, N, 8.0)#微笑時間=0.01のときのため
+    DDD2 = runge_kutta4.Lorenz96_RK4(DD, 0.02, N, 8.0)#微笑時間=0.02のときのため
+    DDD3 = runge_kutta4.Lorenz96_RK4(DD, 0.03, N, 8.0)#微笑時間=0.03のときのため
+    DDD4 = runge_kutta4.Lorenz96_RK4(DD, 0.04, N, 8.0)#微笑時間=0.04のときのため
+
+    #ルンゲクッタでの時間発展の各ステップ段階での誤差をerrorリストに代入する
+    for j in range(N):
+        #deltaDはあるXの各要素の誤差を集めたリスト
+        deltaD1 = []#微笑時間=0.01のときのため
+        deltaD2 = []#微笑時間=0.02のときのため
+        deltaD3 = []#微笑時間=0.03のときのため
+        deltaD4 = []#微笑時間=0.04のときのため
+
+        deltaD1 = D[i + j] - DDD1[j] #D[i + j]は真の値で、DDD[j]は誤差を含んだ値
+        deltaD2 = D[i + j] - DDD2[j]
+        deltaD3 = D[i + j] - DDD3[j]
+        deltaD4 = D[i + j] - DDD4[j]
+        #誤差の大きさ（ノルム）
+        error1[count].append(np.linalg.norm(deltaD1))#微笑時間=0.01のときのため
+        error2[count].append(np.linalg.norm(deltaD2))#微笑時間=0.02のときのため
+        error3[count].append(np.linalg.norm(deltaD3))#微笑時間=0.03のときのため
+        error4[count].append(np.linalg.norm(deltaD4))#微笑時間=0.04のときのため
+        
+    count+=1
+
+#AERは平均誤差発達率
+AER1 = []
+AER2 = []
+AER3 = []
+AER4 = []
+
+#各微小時間ごとの、さらに時間ステップごとの誤差をリストに付け加えていく
+for i in range(N):
+    AER1.append(np.mean([error1[k][i] for k in range(176)]))
+    AER2.append(np.mean([error2[k][i] for k in range(176)]))
+    AER3.append(np.mean([error3[k][i] for k in range(176)]))
+    AER4.append(np.mean([error4[k][i] for k in range(176)]))
+
+#各微小時間ごとの平均誤差発達率をプロットする
+fig = plt.figure( figsize=(11, 5) )
+ax1 = fig.add_subplot(121)
+ax1.plot(AER1,label="h=0.01")
+ax1.plot(AER2,label="h=0.02")
+ax1.plot(AER3,label="h=0.03")
+ax1.plot(AER4,label="h=0.04")
+ax1.set_xlabel("タイムステップ数",fontname="MS Gothic")
+ax1.set_ylabel("平均誤差発達率",fontname="MS Gothic")
+ax1.set_xticks( np.arange(0, N+1, 2))
+ax1.legend()
+ax1.set_title("微小時間hごとの平均誤差発達率",fontname="MS Gothic")
+
+ax2 = fig.add_subplot(122)
+ax2.plot(AER1,label="h=0.01")
+ax2.set_xlabel("タイムステップ数",fontname="MS Gothic")
+ax2.set_ylabel("平均誤差発達率",fontname="MS Gothic")
+ax2.set_xticks( np.arange(0, N+1, 2))
+ax2.axhline(y=2, color='gray', ls='--')
+ax2.legend()
+ax2.set_title("微小時間hごとの平均誤差発達率",fontname="MS Gothic")
+#lines = ax2.plot(ax2,'s-')
+#mplcursors.cursor(lines)
+
+plt.show()
