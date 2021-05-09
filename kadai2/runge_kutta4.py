@@ -1,3 +1,5 @@
+import os
+import numpy as np
 
 def Lorenz96_RK4(initial, h, N, F):
     
@@ -43,18 +45,26 @@ def Lorenz96_RK4(initial, h, N, F):
 #これは直接実行されたときにだけ実行され、他のスクリプトなどからimportなどにより実行される際には実行されないようにするための文
 if __name__ == '__main__':
 
-    sol = Lorenz96_RK4([8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8.008, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8], 0.01, 8, 8.0)
+    X = Lorenz96_RK4([8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8.008, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8], 0.01, 5000, 8.0)
 
     #Lorenz and Emanuelと同じ条件で計算する。
 
 
-    print(sol)
+    #print(X)
+
+    #実行するたびにXの値たちを書き換えたいので、前回以前の実行結果のファイルを削除しておく
+    os.remove('../out.csv')
+    #ファイルに計算結果を追記で記入するために開いておく
+    with open('../out.csv','ab') as f:
+        #ファイルに書き込み
+        XX = np.array(X).reshape(5001,40)#こうやって整形しないとsavetxtで各要素ごとに改行される
+        np.savetxt(f, XX, delimiter=",")
 
     import matplotlib.pyplot as plt
 
-    for i in range(0,9):
+    for i in range(200,300):
 
-        plt.plot(range(0,40), sol[i])
+        plt.plot(range(0,40), X[i])
 
     plt.show()
 

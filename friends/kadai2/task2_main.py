@@ -63,8 +63,7 @@ def main():
         print("now: i_trial = " +str(i_trial))
         
         i_step_chosen = np.random.randint(n_offset, n_offset +n_extent)
-        ary_dx = np.random.rand(ary2_x_att.shape[1])\
-                 *(-1 +2*np.random.randint(0, 2, ary2_x_att.shape[1]))
+        ary_dx = np.random.rand(ary2_x_att.shape[1])*(-1 +2*np.random.randint(0, 2, ary2_x_att.shape[1]))
                  
         norm_dx = np.linalg.norm(ary_dx, ord = 2)
         

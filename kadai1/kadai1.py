@@ -37,7 +37,7 @@ os.remove('../out.csv')
 ###以下がメインパート###
 
 #1000回だけ四次のルンゲクッタを繰り返す
-while count < 1000:
+while count < 5000:
     #ファイルに計算結果を追記で記入するために開いておく
     with open('../out.csv','ab') as f:
 

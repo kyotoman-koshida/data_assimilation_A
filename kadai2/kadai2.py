@@ -28,39 +28,45 @@ count = 0
 #ホフメラー図を確認したところ、20番目のXはすでにカオスに移行していたので20番目から５飛ばしで1000まで行う
 for i in range(20, 900, 5):
 
-    # 誤差発達率を導出するための誤差を40次元分用意する
-    R = []
-    for j in range(40):
-        R.append(np.random.randn()/10000)
+    # 誤差発達率を導出するための誤差を複数の40次元分用意する
+    R = [[] for k in range(100)]
+    for j in range(100):
+        for k in range(40):
+            R[j].append(np.random.randn()/10000)#これで40次元の誤差が100通りできた
 
     #Xのある点の各要素に誤差を加える
-    DD = []
+    DD = [[] for k in range(100)]#DDの要素はリストで、さらにそのリストは同一の点の100通りの誤差が入る
     for j in range(40):
-        DD.append( D[i][j] + R[j])
+        for k in range(100):
+            DD[j].append( D[i][j] + R[k][j])#ある一つの点に100通りの誤差を加える
 
     #上で誤差を加えたXがルンゲクッタの時間発展とともにどれだけ誤差を大きくしていくかをみる
-    DDD1 = runge_kutta4.Lorenz96_RK4(DD, 0.01, N, 8.0)#微小時間h=0.01のときのため
-    DDD2 = runge_kutta4.Lorenz96_RK4(DD, 0.02, N, 8.0)#微小時間h=0.02のときのため
-    DDD3 = runge_kutta4.Lorenz96_RK4(DD, 0.03, N, 8.0)#微小時間h=0.03のときのため
-    DDD4 = runge_kutta4.Lorenz96_RK4(DD, 0.04, N, 8.0)#微小時間h=0.04のときのため
+    for k in range(100):
+        DDD1[k] = runge_kutta4.Lorenz96_RK4(DD[k], 0.01, N, 8.0)#微小時間h=0.01のときのため
+        DDD2[k] = runge_kutta4.Lorenz96_RK4(DD[k], 0.02, N, 8.0)#微小時間h=0.02のときのため
+        DDD3[k] = runge_kutta4.Lorenz96_RK4(DD[k], 0.03, N, 8.0)#微小時間h=0.03のときのため
+        DDD4[k] = runge_kutta4.Lorenz96_RK4(DD[k], 0.04, N, 8.0)#微小時間h=0.04のときのため
 
     #ルンゲクッタでの時間発展の各ステップ段階での誤差をerrorリストに代入する
     for j in range(N):
         #deltaDはあるXの各要素の誤差を集めたリスト
-        deltaD1 = []#微小時間h=0.01のときのため
-        deltaD2 = []#微小時間h=0.02のときのため
-        deltaD3 = []#微小時間h=0.03のときのため
-        deltaD4 = []#微小時間h=0.04のときのため
+        deltaD1 = [[] for k in range(176)]#微小時間h=0.01のときのため
+        deltaD2 = [[] for k in range(176)]#微小時間h=0.02のときのため
+        deltaD3 = [[] for k in range(176)]#微小時間h=0.03のときのため
+        deltaD4 = [[] for k in range(176)]#微小時間h=0.04のときのため
 
-        deltaD1 = D[i + (j+1)] - DDD1[j] #D[i + (j+1)]は、out.csvにある40次元Xの各要素のタイムステップあたりの真の値で、DDD[j]は誤差を含めて開始した各微小時間hごとに計算した値
-        deltaD2 = D[i + 2*(j+1)-1] - DDD2[j]#以下jを二倍三倍四倍しているのは、元データのout.csvのタイムステップが0.01であり、それに合わせて時間の刻み幅を考える必要があるから
-        deltaD3 = D[i + 3*(j+1)-2] - DDD3[j]
-        deltaD4 = D[i + 4*(j+1)-3] - DDD4[j]
+        for k in range(100):
+            deltaD1[k].append( D[i + (j+1)] - DDD1[k][j] ) #D[i + (j+1)]は、out.csvにある40次元Xの各要素のタイムステップあたりの真の値で、DDD[j]は誤差を含めて開始した各微小時間hごとに計算した値
+            deltaD2[k].append( D[i + 2*(j+1)-1] - DDD2[k][j] )#以下jを二倍三倍四倍しているのは、元データのout.csvのタイムステップが0.01であり、それに合わせて時間の刻み幅を考える必要があるから
+            deltaD3[k].append( D[i + 3*(j+1)-2] - DDD3[k][j] )
+            deltaD4[k].append( D[i + 4*(j+1)-3] - DDD4[k][j] )
         #誤差の大きさ（ノルム）
-        error1[count].append(np.linalg.norm(deltaD1))#微小時間h=0.01のときのため
-        error2[count].append(np.linalg.norm(deltaD2))#微小時間h=0.02のときのため
-        error3[count].append(np.linalg.norm(deltaD3))#微小時間h=0.03のときのため
-        error4[count].append(np.linalg.norm(deltaD4))#微小時間h=0.04のときのため
+    for j in range(176):
+        for k in range(100):
+            error1[j][k].append(np.linalg.norm(deltaD1[k]))#微小時間h=0.01のときのため
+            error2[j][k].append(np.linalg.norm(deltaD2[k]))#微小時間h=0.02のときのため
+            error3[j][k].append(np.linalg.norm(deltaD3[k]))#微小時間h=0.03のときのため
+            error4[j][k].append(np.linalg.norm(deltaD4[k]))#微小時間h=0.04のときのため
         
     count+=1
 
@@ -69,13 +75,28 @@ AER1 = []
 AER2 = []
 AER3 = []
 AER4 = []
-
+#erは各タイムステップごとの、アトラクタ上のある一点の100通りの誤差の平均を、さらにアトラクタ上の他の147通りで平均を取ったもののリスト
+er1 = []#h=0.01のとき
+er2 = []#h=0.02のとき
+er3 = []#h=0.03のとき
+er4 = []#h=0.04のとき
 #各微小時間ごとの、さらに時間ステップごとの誤差をリストに付け加えていく
 for i in range(N):
+    for j in range(176):
+        er1.append(np.mean(error1[j][k] for k in range(100)))
+        er2.append(np.mean(error2[j][k] for k in range(100)))
+        er3.append(np.mean(error3[j][k] for k in range(100)))
+        er4.append(np.mean(error4[j][k] for k in range(100)))
+    AER1.append(np.mean(er1))
+    AER2.append(np.mean(er2))
+    AER3.append(np.mean(er3))
+    AER4.append(np.mean(er4))
+    """
     AER1.append(np.mean([error1[k][i] for k in range(176)]))#kで繰り返しを行うことは、アトラクター上から採ってきたサンプルごとに考えているということ
     AER2.append(np.mean([error2[k][i] for k in range(176)]))#そして、error[k][i]をすべてのkで足し合わせることは、サンプルから出てきたタイムステップiのときの誤差を足し合わせることとなる
     AER3.append(np.mean([error3[k][i] for k in range(176)]))
     AER4.append(np.mean([error4[k][i] for k in range(176)]))
+    """
 
 #各微小時間ごとの平均誤差発達率をプロットする
 fig = plt.figure( figsize=(11, 5) )
