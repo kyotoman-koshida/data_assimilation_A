@@ -17,10 +17,10 @@ N = 20
 
 #errorは各Xとその時間発展事の誤差の大きさを集めるリスト
 #176=(900-20)/5
-error1 = [[] for i in range(176)]#微笑時間=0.01のときのため
-error2 = [[] for i in range(176)]#微笑時間=0.02のときのため
-error3 = [[] for i in range(176)]#微笑時間=0.03のときのため
-error4 = [[] for i in range(176)]#微笑時間=0.04のときのため
+error1 = [[] for i in range(176)]#微小時間h=0.01のときのため
+error2 = [[] for i in range(176)]#微小時間h=0.02のときのため
+error3 = [[] for i in range(176)]#微小時間h=0.03のときのため
+error4 = [[] for i in range(176)]#微小時間h=0.04のときのため
 
 #range(20,5,1000)だと何回目の計算か分かりにくいので別にcountを定義してカウントする
 count = 0
@@ -39,28 +39,28 @@ for i in range(20, 900, 5):
         DD.append( D[i][j] + R[j])
 
     #上で誤差を加えたXがルンゲクッタの時間発展とともにどれだけ誤差を大きくしていくかをみる
-    DDD1 = runge_kutta4.Lorenz96_RK4(DD, 0.01, N, 8.0)#微笑時間=0.01のときのため
-    DDD2 = runge_kutta4.Lorenz96_RK4(DD, 0.02, N, 8.0)#微笑時間=0.02のときのため
-    DDD3 = runge_kutta4.Lorenz96_RK4(DD, 0.03, N, 8.0)#微笑時間=0.03のときのため
-    DDD4 = runge_kutta4.Lorenz96_RK4(DD, 0.04, N, 8.0)#微笑時間=0.04のときのため
+    DDD1 = runge_kutta4.Lorenz96_RK4(DD, 0.01, N, 8.0)#微小時間h=0.01のときのため
+    DDD2 = runge_kutta4.Lorenz96_RK4(DD, 0.02, N, 8.0)#微小時間h=0.02のときのため
+    DDD3 = runge_kutta4.Lorenz96_RK4(DD, 0.03, N, 8.0)#微小時間h=0.03のときのため
+    DDD4 = runge_kutta4.Lorenz96_RK4(DD, 0.04, N, 8.0)#微小時間h=0.04のときのため
 
     #ルンゲクッタでの時間発展の各ステップ段階での誤差をerrorリストに代入する
     for j in range(N):
         #deltaDはあるXの各要素の誤差を集めたリスト
-        deltaD1 = []#微笑時間=0.01のときのため
-        deltaD2 = []#微笑時間=0.02のときのため
-        deltaD3 = []#微笑時間=0.03のときのため
-        deltaD4 = []#微笑時間=0.04のときのため
+        deltaD1 = []#微小時間h=0.01のときのため
+        deltaD2 = []#微小時間h=0.02のときのため
+        deltaD3 = []#微小時間h=0.03のときのため
+        deltaD4 = []#微小時間h=0.04のときのため
 
-        deltaD1 = D[i + j] - DDD1[j] #D[i + j]は真の値で、DDD[j]は誤差を含んだ値
-        deltaD2 = D[i + j] - DDD2[j]
-        deltaD3 = D[i + j] - DDD3[j]
-        deltaD4 = D[i + j] - DDD4[j]
+        deltaD1 = D[i + (j+1)] - DDD1[j] #D[i + (j+1)]は、out.csvにある40次元Xの各要素のタイムステップあたりの真の値で、DDD[j]は誤差を含めて開始した各微小時間hごとに計算した値
+        deltaD2 = D[i + 2*(j+1)-1] - DDD2[j]#以下jを二倍三倍四倍しているのは、元データのout.csvのタイムステップが0.01であり、それに合わせて時間の刻み幅を考える必要があるから
+        deltaD3 = D[i + 3*(j+1)-2] - DDD3[j]
+        deltaD4 = D[i + 4*(j+1)-3] - DDD4[j]
         #誤差の大きさ（ノルム）
-        error1[count].append(np.linalg.norm(deltaD1))#微笑時間=0.01のときのため
-        error2[count].append(np.linalg.norm(deltaD2))#微笑時間=0.02のときのため
-        error3[count].append(np.linalg.norm(deltaD3))#微笑時間=0.03のときのため
-        error4[count].append(np.linalg.norm(deltaD4))#微笑時間=0.04のときのため
+        error1[count].append(np.linalg.norm(deltaD1))#微小時間h=0.01のときのため
+        error2[count].append(np.linalg.norm(deltaD2))#微小時間h=0.02のときのため
+        error3[count].append(np.linalg.norm(deltaD3))#微小時間h=0.03のときのため
+        error4[count].append(np.linalg.norm(deltaD4))#微小時間h=0.04のときのため
         
     count+=1
 
@@ -72,8 +72,8 @@ AER4 = []
 
 #各微小時間ごとの、さらに時間ステップごとの誤差をリストに付け加えていく
 for i in range(N):
-    AER1.append(np.mean([error1[k][i] for k in range(176)]))
-    AER2.append(np.mean([error2[k][i] for k in range(176)]))
+    AER1.append(np.mean([error1[k][i] for k in range(176)]))#kで繰り返しを行うことは、アトラクター上から採ってきたサンプルごとに考えているということ
+    AER2.append(np.mean([error2[k][i] for k in range(176)]))#そして、error[k][i]をすべてのkで足し合わせることは、サンプルから出てきたタイムステップiのときの誤差を足し合わせることとなる
     AER3.append(np.mean([error3[k][i] for k in range(176)]))
     AER4.append(np.mean([error4[k][i] for k in range(176)]))
 
@@ -102,3 +102,10 @@ ax2.set_title("微小時間hごとの平均誤差発達率",fontname="MS Gothic"
 #mplcursors.cursor(lines)
 
 plt.show()
+
+#nperror1 = np.array(error1)
+#print(len(nperror1[:,0]))
+
+print(D[-1])
+print(len(D[1]))
+#print(len(DDD1[1]))
