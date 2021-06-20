@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-path = 'C:/code/python/data-asmp/out.csv'
+path = 'C:/Users/heihe/Python/dtas/out.csv'
 fig = plt.figure( figsize=(11, 5) )
 
 F=8.0       # 方程式中の定数

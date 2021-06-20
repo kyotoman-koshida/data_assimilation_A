@@ -115,7 +115,7 @@ while count < 5000:
                 np.savetxt(f, XX, delimiter=",")
                 
                 count += 1
-                """
+                
                 #描画する
                 plt.plot(index,X)
                 plt.show(block=False)
@@ -123,12 +123,13 @@ while count < 5000:
                 """
                 """
                 #いちいち毎回描画するのはうるさいので100回ごとに描画する
-                if count % 100 == 0:
+                #if count % 100 == 0:
                     
-                    #描画する
-                    plt.plot(index,X)
-                    plt.show(block=False)
-                    input('press <ENTER> to continue')
-                """
+                #描画する
+                plt.plot(index,X)
+                plt.show(block=False)
+                print(count)
+                input('press <ENTER> to continue')
+                
             
 

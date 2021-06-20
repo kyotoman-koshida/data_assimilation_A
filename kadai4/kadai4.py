@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+
 #Xのデータの入っているout.csvまでのパス
 path1 = '../secondyear.csv'
 #Xのデータの入っているout.csvまでのパス
@@ -16,8 +17,9 @@ errors = []#後のヒストグラム作成のために誤差のリストを作�
 
 for i in range(int(N)):
     for j in range(40):
-        errors.append(np.random.normal(1)/10000) #後のヒストグラムのために誤差だけも集めておく
-        D[i][j] += np.random.normal(1)/10000 #もともと保存していたデータに誤差を足しこむ
+        error = np.random.normal(0,1)
+        errors.append(error) #後のヒストグラムのために誤差だけも集めておく
+        D[i][j] += error #もともと保存していたデータに誤差を足しこむ
 
 #実行するたびにXの値たちを書き換えたいので、前回以前の実行結果のファイルを削除しておく
 os.remove('../observe.csv')
@@ -27,6 +29,12 @@ with open('../observe.csv','ab') as f:
     XX = np.array(D).reshape(int(N),40)#こうやって整形しないとsavetxtで各要素ごとに改行される
     np.savetxt(f, XX, delimiter=",")
 
+print(len(errors))
 #誤差のヒストグラムを描く
-(a_hist, a_bins, _) = plt.hist(errors,bins=50)
+(a_hist, a_bins, _) = plt.hist(errors,bins=50,density=True)
+fig = plt.figure( figsize=(11, 5) )
+ax1 = fig.add_subplot(111)
+ax1.set_xlabel("標準正規分布のヒストグラフ",fontname="MS Gothic")
+ax1.legend()
 plt.show()
+
